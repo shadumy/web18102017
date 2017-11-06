@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Station</title>
+		<style>
+			body { margin: 0;}
+			#map { width: 100%; height: 400px; margin: 0; }
+		</style>
+	</head>
+	<body>
+    
+    <button onclick="goNorth()">North</button>
+    <button onclick='locate()'>Current Position</button>
+    <button onclick='goCaltex()'>Show</button>
+
+	<div id="map"></div>
+	<script>
+
+    window.addEventListener('resize', resizing)
+	function resizing() {
+		var div = document.getElementById('map')
+		div.style.height = window.innerHeight + 'px'
+	}
+	var map = null
+    
+
+	var station = [
+		{lat: 14.00, lng: 99.00},
+		{lat: 14.25, lng: 99.25},
+		{lat: 14.50, lng: 99.50}
+	]
+	function start() {
+		var div = document.getElementById('map')
+		div.style.height = window.innerHeight + 'px'
+
+		var option = { center:{lat:15, lng:100}, zoom: 8 }
+		map = new google.maps.Map(div, option)
+        for(var e of station){
+            var item = {
+                position: {lat: e.lat, lng: e.lng},
+                map:map
+            }
+            new google.maps.Marker(item)
+        }
+    }   
+
+        //ระบุตำแหน่ง location ตัวเอง
+        function locate(){
+            navigator.geolocation.getCurrentPosition(show, showError,{enableHighAccuracy:true})
+        }
+        
+        
+        
+        function show(result){        
+            var currentPosi={
+                    position: {lat:result.coords.latitude , lng:result.coords.longitude},
+                    map:map
+                }
+            new google.maps.Marker(currentPosi)    
+            map.setCenter(currentPosi.position)
+            map.setZoom(15)
+        }
+        function showError() {
+                alert('Unable to locate your position')
+        }
+        
+
+		var data = { 
+			position: {lat: 15.5, lng: 100},
+			map: map
+		}
+		new google.maps.Marker(data)
+        
+        
+	
+
+    function goNorth(){
+            var data={
+                position: {lat: 18, lng: 99},
+                map: map
+            }
+            new google.maps.Marker(data)    
+            map.setCenter(data.position)
+            map.setZoom(12)
+    }
+    
+    //ดึงข้อมูลปั๊มน้ำมัน Caltex ทั้งหมดมาโชว์บนแผนที่
+    function goCaltex(){
+        fetch('https://algorist.club/caltex-th')
+        .then(function(response){
+            return response.json() //แปลง response ให้เป็น Json (Javascript Object Notation)
+        })
+        .then(function(information){
+            for(var e of information){
+                var data={
+                position: {lat: parseFloat(e.latitude), lng: parseFloat(e.longitude)},
+                map: map,
+                title: e.address
+                }
+            new google.maps.Marker(data)
+            }
+            var data={
+                position: {lat: parseFloat(information[1].latitude), lng: parseFloat(information[1].longitude)},
+                map: map,
+                
+                }    
+            map.setCenter(data.position)
+            map.setZoom(5)
+        })
+    }
+
+    
+    
+
+	</script>
+	<script src="https://maps.googleapis.com/maps/api/js?callback=start"
+		async defer></script>
+</body>
+</html>
